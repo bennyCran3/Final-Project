@@ -5,6 +5,7 @@ import logo from './League2.webp';
 
 function App() {
   const [searchText, setSearchText] = useState("");
+  const [tagText, setTagText] = useState("");
   const [gameList, setGameList] = useState([]);
   const [masteryScore, setMasteryScore] = useState(null);
   const [playerData, setPlayerData] = useState(null);
@@ -12,43 +13,43 @@ function App() {
   const [selectedGame, setSelectedGame] = useState(null);
   const [headingText, setHeadingText] = useState("");
 
-useEffect(() => {
-  const headingText = "LoL PLAYER SEARCH";
-  let index = 0;
-  const intervalId = setInterval(() => {
-    if (index <= headingText.length) {
-      setHeadingText(headingText.slice(0, index));
-      index++;
-    } else {
-      clearInterval(intervalId);
-    }
-  }, 100);
+  useEffect(() => {
+    const headingText = "LoL PLAYER SEARCH";
+    let index = 0;
+    const intervalId = setInterval(() => {
+      if (index <= headingText.length) {
+        setHeadingText(headingText.slice(0, index));
+        index++;
+      } else {
+        clearInterval(intervalId);
+      }
+    }, 100);
 
-  return () => clearInterval(intervalId);
-}, []);
+    return () => clearInterval(intervalId);
+  }, []);
 
 
   function getPlayerGames() {
-    axios.get("http://localhost:4000/past5Games", { params: { username: searchText } })
-      .then(function (response) {
-        if (response.data.matchDataArray.length === 0) {
-          setError(true);
-          setGameList([]);
-          setMasteryScore(null);
-          setPlayerData(null);
-        } else {
-          setError(false);
-          setGameList(response.data.matchDataArray);
-          setMasteryScore(response.data.championMasteryScore);
-          setPlayerData(response.data.playerData);
-        }
-      }).catch(function (error) {
-        console.log(error);
-        setError(true);
-        setGameList([]);
-        setMasteryScore(null);
-        setPlayerData(null);
-      });
+    axios.get("http://localhost:4000/past5Games", { params: { username: searchText, tag: tagText} })
+        .then(function (response) {
+          if (response.data.matchDataArray.length === 0) {
+            setError(true);
+            setGameList([]);
+            setMasteryScore(null);
+            setPlayerData(null);
+          } else {
+            setError(false);
+            setGameList(response.data.matchDataArray);
+            setMasteryScore(response.data.championMasteryScore);
+            setPlayerData(response.data.playerData);
+          }
+        }).catch(function (error) {
+      console.log(error);
+      setError(true);
+      setGameList([]);
+      setMasteryScore(null);
+      setPlayerData(null);
+    });
   }
 
   function displayMasteryScore() {
@@ -62,52 +63,53 @@ useEffect(() => {
     setSelectedGame(event.target.value);
   }
 
-  
+
   return (
-    <div className="App">
-      <a href="https://www.leagueoflegends.com/en-us/" target="_blank" rel="noopener noreferrer">
-    <img src={logo} alt="Logo" className="logo"/>
-    </a>
-    <h2 className="animated-heading">{headingText}</h2>
-    <div className="search-box">
-    <label htmlFor="fieldName">enter summoner's name:</label>
-      <input type="text" id="fieldName" name="fieldName" onChange={e => setSearchText(e.target.value)}></input>
-      <button onClick={getPlayerGames}>Search</button>
-    </div>
-      {error ? (
-        <p>No Data</p>
-      ) : gameList.length !== 0 ? (
-        <>
-          <p>Looking at Results for {searchText}</p>
-          {displayMasteryScore()}
-          {playerData && (
-            <div>
-              <h2>Player Data</h2>
-              <p>Summoner Name: {playerData.summonerName}</p>
-              {playerData.rank} {playerData.tier} {playerData.rankPoints} 
-            </div>
-          )}
-          <select onChange={handleGameSelect}>
-            <option value="">Select a Game</option>
-            {gameList.map((index) => (
-              <option key={index} value={index}>Game {index + 1}</option>
-            ))}
-          </select>
-          {selectedGame !== null && (
-            <div>
-              <h2>Selected Game</h2>
-              <div>
-                {gameList[selectedGame].info.participants.map((data, participantIndex) => (
-                  <p key={participantIndex}>Player {participantIndex + 1}: {data.summonerName}, KDA: {data.kills} / {data.deaths} / {data.assists}</p>
+      <div className="App">
+        <a href="https://www.leagueoflegends.com/en-us/" target="_blank" rel="noopener noreferrer">
+          <img src={logo} alt="Logo" className="logo"/>
+        </a>
+        <h2 className="animated-heading">{headingText}</h2>
+        <div className="search-box">
+          <label htmlFor="fieldName">enter summoner's name:</label>
+          <input type="text" id="fieldName" name="fieldName" onChange={e => setSearchText(e.target.value)}></input>
+          <input type="text" id="fieldTag" name="fieldTag" onChange={e => setTagText(e.target.value)}></input>
+          <button onClick={getPlayerGames}>Search</button>
+        </div>
+        {error ? (
+            <p>No Data</p>
+        ) : gameList.length !== 0 ? (
+            <>
+              <p>Looking at Results for {searchText}</p>
+              {displayMasteryScore()}
+              {playerData && (
+                  <div>
+                    <h2>Player Data</h2>
+                    <p>Summoner Name: {playerData.summonerName}</p>
+                    {playerData.rank} {playerData.tier} {playerData.rankPoints}
+                  </div>
+              )}
+              <select onChange={handleGameSelect}>
+                <option value="">Select a Game</option>
+                {gameList.map((index) => (
+                    <option key={index} value={index}>Game {index + 1}</option>
                 ))}
-              </div>
-            </div>
-          )}
-        </>
-      ) : (
-        <p>No Data</p>
-      )}
-    </div>
+              </select>
+              {selectedGame !== null && (
+                  <div>
+                    <h2>Selected Game</h2>
+                    <div>
+                      {gameList[selectedGame].info.participants.map((data, participantIndex) => (
+                          <p key={participantIndex}>Player {participantIndex + 1}: {data.summonerName}, KDA: {data.kills} / {data.deaths} / {data.assists}</p>
+                      ))}
+                    </div>
+                  </div>
+              )}
+            </>
+        ) : (
+            <p>No Data</p>
+        )}
+      </div>
   );
 }
 

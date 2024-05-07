@@ -4,10 +4,10 @@ const axios = require('axios');
 const app = express();
 
 app.use(cors());
-const API_KEY = "RGAPI-c7a6d02b-0977-46d0-9078-951679e8b0e2";
+const API_KEY = "RGAPI-27d41a81-1893-4597-a495-e20502d8fc13";
 
-function getPlayerPUUID(playerName) {
-    return axios.get("https://na1.api.riotgames.com" + "/lol/summoner/v4/summoners/by-name/" + playerName + "?api_key=" + API_KEY)
+function getPlayerPUUID(playerName, tag) {
+    return axios.get("https://americas.api.riotgames.com" + "/riot/account/v1/accounts/by-riot-id/" + playerName + "/" + tag + "?api_key=" + API_KEY)
         .then(response => {
             return response.data.puuid;
         }).catch(err => err);
@@ -30,9 +30,10 @@ function getPlayerChampionMasteryScore(encryptedPUUID) {
 
 app.get('/past5Games', async (req, res) => {
     const playerName = req.query.username;
+    const playerTag = req.query.tag;
 
     try {
-        const PUUID = await getPlayerPUUID(playerName);
+        const PUUID = await getPlayerPUUID(playerName, playerTag);
 
         if (!PUUID) {
             // Player name not found, send response with empty data
